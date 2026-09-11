@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitto - Cyber Tamagotchi AI Pet Agent (16:9 Edition)</title>
+  
+  <!-- Google Fonts: Arcade Retro & Cyberpunk Monospace -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+
+  <style>
+    /* RESET & FULL 16:9 VIEWPORT */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #080714;
+      color: #f1f5f9;
+      font-family: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* CYBER RETRO GRID & NEON ATMOSPHERE */
+    .cyber-bg {
+      background-color: #080714;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(147, 51, 234, 0.22) 0%, transparent 65%),
+        radial-gradient(circle at 100% 100%, rgba(14, 165, 233, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(244, 63, 94, 0.12) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+    }
+
+    .pixel-title {
+      font-family: 'Press Start 2P', monospace;
+      letter-spacing: -1px;
+    }
+
+    .mono-num {
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* SCANLINE EFFECT OVER PET DISPLAY */
+    .scanlines {
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.03));
+      background-size: 100% 3px, 4px 100%;
+      pointer-events: none;
+    }
+
+    /* CUSTOM CYBER SCROLLBAR */
+    .cyber-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .cyber-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 3px;
+    }
+    .cyber-scroll::-webkit-scrollbar-thumb {
+      background: #8b5cf6;
+      border-radius: 3px;
+      box-shadow: 0 0 6px rgba(139, 92, 246, 0.6);
+    }
+
+    /* SPRITE ANIMATIONS */
+    @keyframes bob-idle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    @keyframes wag-tail {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-15deg); }
+      75% { transform: rotate(15deg); }
+    }
+    @keyframes ear-twitch {
+      0%, 90%, 100% { transform: translateY(0); }
+      95% { transform: translateY(-3px); }
+    }
+    @keyframes pet-hyper {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-3px, -8px) rotate(-4deg); }
+      40% { transform: translate(3px, -4px) rotate(4deg); }
+      60% { transform: translate(-2px, -10px) rotate(-2deg); }
+      80% { transform: translate(3px, -2px) rotate(3deg); }
+    }
+    @keyframes glitch-shake {
+      0%, 100% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+      20% { transform: translate(-4px, 3px); filter: hue-rotate(90deg); }
+      40% { transform: translate(4px, -3px); filter: hue-rotate(180deg); }
+      60% { transform: translate(-3px, -2px); filter: hue-rotate(270deg); }
+      80% { transform: translate(3px, 2px); filter: hue-rotate(360deg); }
+    }
+    @keyframes float-up {
+      0% { transform: translateY(0) scale(0.9); opacity: 1; }
+      100% { transform: translateY(-36px) scale(1.1); opacity: 0; }
+    }
+
+    .anim-idle { animation: bob-idle 1.4s ease-in-out infinite; }
+    .anim-wag { transform-origin: bottom center; animation: wag-tail 0.5s ease-in-out infinite; }
+    .anim-ear { animation: ear-twitch 2.5s ease-in-out infinite; }
+    .anim-hyper { animation: pet-hyper 0.4s ease-in-out infinite; }
+    .anim-glitch { animation: glitch-shake 0.25s steps(2, start) infinite; }
+    .floating-particle { animation: float-up 0.9s ease-out forwards; }
+
+    /* HIGH-CONTRAST NEON BUTTONS (CLEAN RETRO, NO REDUNDANT ICONS) */
+    .neon-btn {
+      position: relative;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.15s ease-in-out;
+      border: 2px solid;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .neon-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    .neon-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* GLOWING RANGE SLIDERS */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #1e1b4b;
+      border-radius: 4px;
+      border: 1px solid rgba(147, 51, 234, 0.4);
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 4px;
+      background: #c084fc;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      box-shadow: 0 0 10px #c084fc, 0 0 4px #fff;
+      border: 2px solid #ffffff;
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* HUD BORDERS & PANELS */
+    .hud-panel {
+      background: rgba(13, 12, 28, 0.88);
+      border: 1.5px solid rgba(147, 51, 234, 0.35);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 0 16px rgba(147, 51, 234, 0.05);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="cyber-bg w-screen h-screen flex flex-col p-3.5 box-border overflow-hidden select-none">
+
+  <!-- ==================== HEADER BAR ==================== -->
+  <header class="h-12 w-full hud-panel px-4 flex items-center justify-between border-purple-500/40 mb-3 flex-shrink-0 shadow-lg">
+    <div class="flex items-center gap-3.5">
+      <div class="w-8 h-8 rounded bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center font-bold text-white shadow-[0_0_12px_rgba(168,85,247,0.6)] pixel-title text-[10px]">
+        8B
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="pixel-title text-xs tracking-wider text-purple-300">BITTO.EXE // CYBER-PET CONSOLE</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-purple-900/80 border border-purple-400/50 text-purple-200 font-bold uppercase tracking-wider">
+            16:9 Widescreen
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Controls: Mode Toggle & Status -->
+    <div class="flex items-center gap-3">
+      <button id="btn-engine-toggle" onclick="toggleEngineMode()" 
+        class="neon-btn text-xs px-3 py-1.5 rounded bg-emerald-950/90 text-emerald-300 border-emerald-400 hover:bg-emerald-900 shadow-[0_0_10px_rgba(16,185,129,0.3)]">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
+        <span id="label-engine-btn">[MODE: REAL GEMINI API]</span>
+      </button>
+
+      <button id="btn-api-key" onclick="configureApiKey()" 
+        class="neon-btn text-xs px-2.5 py-1.5 rounded bg-slate-900 text-purple-300 border-purple-500/50 hover:bg-slate-800" title="Cấu hình Gemini API Key">
+        KEY
+      </button>
+
+      <div class="flex items-center gap-2 px-3 py-1 rounded bg-slate-900/90 border border-slate-700 text-xs font-mono">
+        <span class="text-slate-400">FPS:</span>
+        <span class="text-emerald-400 font-bold">60</span>
+        <span class="text-slate-600">|</span>
+        <span id="clock-display" class="text-purple-300 font-bold">12:00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN 3-COLUMN 16:9 WORKSPACE ==================== -->
+  <main class="flex-1 w-full grid grid-cols-12 gap-3.5 min-h-0">
+    
+    <!-- ==================== COL 1: PET HABITAT & VITALS (34% = 4 COLS) ==================== -->
+    <section class="col-span-4 hud-panel flex flex-col p-3.5 justify-between min-h-0 overflow-hidden relative border-purple-500/30">
+      
+      <!-- Thought Bubble -->
+      <div class="relative bg-purple-950/40 border border-purple-500/40 rounded-lg p-2.5 mb-2 shadow-inner">
+        <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-purple-300 border-b border-purple-500/20 pb-1 mb-1">
+          <span class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
+            SUY NGHĨ CỦA BITTO
+          </span>
+          <span id="hud-temp-tag" class="mono-num text-amber-300 font-bold">T = 0.70</span>
+        </div>
+        <p id="pet-thought-text" class="text-xs text-slate-200 leading-snug line-clamp-2 italic">
+          "Gâu gâu! Mình đã sẵn sàng! Bạn hãy thử chọn tính cách hoặc kéo thanh tham số nhé!"
+        </p>
+      </div>
+
+      <!-- Holographic Pet Chamber (LCD Display) -->
+      <div class="flex-1 w-full bg-[#05040b] rounded-lg border-2 border-purple-500/30 relative flex flex-col items-center justify-center overflow-hidden shadow-inner my-1">
+        <!-- CRT scanline overlay -->
+        <div class="scanlines absolute inset-0 z-10 pointer-events-none"></div>
+
+        <!-- Floating Particles Area -->
+        <div id="particle-container" class="absolute inset-0 pointer-events-none z-20 overflow-hidden"></div>
+
+        <!-- Dynamic Halo / Aura Glow -->
+        <div id="pet-aura" class="absolute w-44 h-44 rounded-full bg-purple-600/20 blur-2xl transition-all duration-500 pointer-events-none"></div>
+
+        <!-- THE LIVING CYBER PUPPET SPRITE (HIGH RESOLUTION SVG PIXEL ART) -->
+        <div id="sprite-wrapper" class="anim-idle relative z-15 cursor-pointer transform transition-all duration-300" onclick="petAction('love')">
+          <svg id="pet-svg" width="160" height="160" viewBox="0 0 32 32" style="image-rendering: pixelated; shape-rendering: crispEdges;">
+            <!-- DROP SHADOW -->
+            <ellipse cx="16" cy="29" rx="10" ry="2.5" fill="rgba(0,0,0,0.5)"/>
+
+            <!-- WAGGING TAIL -->
+            <g id="pup-tail" class="anim-wag" style="transform-origin: 22px 22px;">
+              <rect x="22" y="19" width="3" height="3" fill="#a855f7"/>
+              <rect x="24" y="16" width="3" height="3" fill="#c084fc"/>
+              <rect x="26" y="14" width="2" height="2" fill="#e9d5ff"/>
+            </g>
+
+            <!-- FLOPPY EARS -->
+            <g id="pup-ears" class="anim-ear">
+              <!-- Left Ear -->
+              <rect x="6" y="7" width="4" height="6" fill="#7e22ce"/>
+              <rect x="7" y="8" width="2" height="4" fill="#f472b6"/>
+              <!-- Right Ear -->
+              <rect x="22" y="7" width="4" height="6" fill="#7e22ce"/>
+              <rect x="23" y="8" width="2" height="4" fill="#f472b6"/>
+            </g>
+
+            <!-- ACCESSORY: ROBOT VISOR / ANTENNA -->
+            <g id="acc-antenna" class="hidden">
+              <rect x="15" y="3" width="2" height="4" fill="#38bdf8"/>
+              <circle cx="16" cy="3" r="2" fill="#06b6d4"/>
+            </g>
+
+            <!-- BODY -->
+            <rect id="pup-body" x="9" y="11" width="14" height="14" rx="2" fill="#9333ea"/>
+            <!-- White Belly Chest -->
+            <rect x="12" y="16" width="8" height="7" rx="1" fill="#f3e8ff"/>
+
+            <!-- PAWS -->
+            <rect x="10" y="24" width="3" height="3" fill="#6b21a8"/>
+            <rect x="19" y="24" width="3" height="3" fill="#6b21a8"/>
+
+            <!-- BLUSH CHEEKS -->
+            <g id="pup-blush">
+              <rect x="9" y="17" width="2" height="2" fill="#f43f5e" opacity="0.8"/>
+              <rect x="21" y="17" width="2" height="2" fill="#f43f5e" opacity="0.8"/>
+            </g>
+
+            <!-- NOSE -->
+            <rect x="15" y="16" width="2" height="1" fill="#1e1b4b"/>
+
+            <!-- DYNAMIC EYES -->
+            <g id="pup-eyes">
+              <!-- Left Eye -->
+              <rect x="11" y="13" width="3" height="3" fill="#0f172a"/>
+              <rect x="12" y="13" width="1" height="1" fill="#ffffff"/>
+              <!-- Right Eye -->
+              <rect x="18" y="13" width="3" height="3" fill="#0f172a"/>
+              <rect x="19" y="13" width="1" height="1" fill="#ffffff"/>
+            </g>
+
+            <!-- DYNAMIC MOUTH -->
+            <g id="pup-mouth">
+              <rect x="15" y="18" width="2" height="1" fill="#be123c"/>
+              <rect x="14" y="17" width="1" height="1" fill="#be123c"/>
+              <rect x="17" y="17" width="1" height="1" fill="#be123c"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Dynamic State Title Tag -->
+        <div class="absolute bottom-2 flex items-center gap-2 px-3 py-0.5 rounded-full bg-slate-900/80 border border-purple-500/40 text-[10px] font-mono text-purple-300 z-15">
+          <span>THỂ TRẠNG:</span>
+          <span id="pet-mood-badge" class="font-bold text-emerald-400">VUI VẺ (OPTIMAL)</span>
+        </div>
+      </div>
+
+      <!-- PET CARE ACTIONS (CLEAN TEXT, NO EMOJI OVERLOAD) -->
+      <div class="grid grid-cols-4 gap-2 my-2">
+        <button onclick="petAction('feed')" title="Nạp thêm năng lượng cho Bitto"
+          class="neon-btn py-2 px-1 rounded bg-indigo-950 text-indigo-300 border-indigo-500 hover:bg-indigo-900 text-[11px]">
+          CHO ĂN
+        </button>
+        <button onclick="petAction('love')" title="Vuốt ve tăng chỉ số hạnh phúc"
+          class="neon-btn py-2 px-1 rounded bg-pink-950 text-pink-300 border-pink-500 hover:bg-pink-900 text-[11px]">
+          VUỐT VE
+        </button>
+        <button onclick="petAction('train')" title="Huấn luyện tăng IQ và EXP"
+          class="neon-btn py-2 px-1 rounded bg-amber-950 text-amber-300 border-amber-500 hover:bg-amber-900 text-[11px]">
+          HUẤN LUYỆN
+        </button>
+        <button onclick="petAction('sleep')" title="Ru ngủ để reset bộ nhớ ngữ cảnh"
+          class="neon-btn py-2 px-1 rounded bg-sky-950 text-sky-300 border-sky-500 hover:bg-sky-900 text-[11px]">
+          NGHỈ NGƠI
+        </button>
+      </div>
+
+      <!-- VITALS & HARDWARE METERS -->
+      <div class="space-y-2 text-xs bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+        <!-- Energy Bar -->
+        <div>
+          <div class="flex justify-between items-center text-[11px] mb-0.5">
+            <span class="text-slate-400 font-bold">NĂNG LƯỢNG:</span>
+            <span id="txt-energy" class="mono-num text-amber-400 font-bold">100%</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <div id="bar-energy" class="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- Happiness Bar -->
+        <div>
+          <div class="flex justify-between items-center text-[11px] mb-0.5">
+            <span class="text-slate-400 font-bold">HẠNH PHÚC:</span>
+            <span id="txt-happiness" class="mono-num text-pink-400 font-bold">90%</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <div id="bar-happiness" class="h-full bg-gradient-to-r from-pink-500 to-rose-400 transition-all duration-300" style="width: 90%;"></div>
+          </div>
+        </div>
+
+        <!-- Logic vs Hallucination Risk -->
+        <div class="pt-0.5">
+          <div class="flex justify-between items-center text-[11px] mb-0.5">
+            <span class="text-slate-400 font-bold">NGUY CƠ ẢO GIÁC:</span>
+            <span id="txt-hallucination" class="mono-num text-emerald-400 font-bold">THẤP (8%)</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <div id="bar-hallucination" class="h-full bg-emerald-500 transition-all duration-300" style="width: 8%;"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== COL 2: PARAMETER LAB & PERSONA CORE (30% = 4 COLS) ==================== -->
+    <section class="col-span-4 hud-panel flex flex-col p-4 justify-between min-h-0 overflow-y-auto cyber-scroll border-purple-500/30">
+      
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between border-b border-purple-500/30 pb-2 mb-1">
+        <div class="flex items-center gap-2">
+          <span class="text-purple-300 font-bold text-xs uppercase tracking-wider">// BẢNG THAM SỐ AGENT</span>
+        </div>
+        <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 mono-num">LAB 1 CORE</span>
+      </div>
+
+      <!-- Temperature Slider -->
+      <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800 space-y-1.5 my-1">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold text-purple-300">TEMPERATURE:</span>
+          <span id="val-temp" class="mono-num text-amber-400 font-bold text-sm">0.70</span>
+        </div>
+        <input id="slider-temp" type="range" min="0.0" max="2.0" step="0.05" value="0.7">
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>0.0 (Logic)</span>
+          <span id="desc-temp" class="text-amber-300 font-bold">Cân bằng & Tự nhiên</span>
+          <span>2.0 (Ảo giác)</span>
+        </div>
+      </div>
+
+      <!-- Top-P Slider -->
+      <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800 space-y-1.5 my-1">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold text-blue-300">TOP-P (NUCLEUS):</span>
+          <span id="val-topp" class="mono-num text-blue-400 font-bold text-sm">0.90</span>
+        </div>
+        <input id="slider-topp" type="range" min="0.1" max="1.0" step="0.05" value="0.9">
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>0.1 (Hẹp)</span>
+          <span id="desc-topp" class="text-blue-300">Lấy 90% từ ngữ xác suất cao</span>
+          <span>1.0 (Toàn bộ)</span>
+        </div>
+      </div>
+
+      <!-- Context Memory Turns -->
+      <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800 space-y-1.5 my-1">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold text-indigo-300">BỘ NHỚ CONTEXT:</span>
+          <span id="val-memory" class="mono-num text-indigo-400 font-bold text-sm">3 LƯỢT</span>
+        </div>
+        <input id="slider-memory" type="range" min="1" max="8" step="1" value="3">
+        <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+          <span>1 lượt</span>
+          <span id="desc-memory" class="text-indigo-300">Cắt ngắn theo history[-6:]</span>
+          <span>8 lượt</span>
+        </div>
+      </div>
+
+      <!-- PERSONA SELECTOR (SYNC ALL SLIDERS ACCORDINGLY) -->
+      <div class="mt-2 pt-2 border-t border-purple-500/20">
+        <div class="text-[11px] font-bold text-purple-300 uppercase tracking-wider mb-2 flex justify-between">
+          <span>HỒ SƠ TÍNH CÁCH (PERSONA):</span>
+          <span class="text-[10px] text-slate-400 font-mono">TỰ ĐỘNG CẤU HÌNH</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Pet Persona -->
+          <button id="btn-persona-pet" onclick="applyPersonaPreset('pet')" 
+            class="neon-btn p-2.5 rounded text-xs bg-purple-600 text-white border-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.5)]">
+            CÚN CƯNG
+          </button>
+          <!-- Robot Persona -->
+          <button id="btn-persona-robot" onclick="applyPersonaPreset('robot')" 
+            class="neon-btn p-2.5 rounded text-xs bg-slate-900 text-cyan-300 border-cyan-500/70 hover:bg-cyan-950">
+            SIÊU LOGIC
+          </button>
+          <!-- Sage Persona -->
+          <button id="btn-persona-sage" onclick="applyPersonaPreset('sage')" 
+            class="neon-btn p-2.5 rounded text-xs bg-slate-900 text-amber-300 border-amber-500/70 hover:bg-amber-950">
+            HIỀN TRIẾT
+          </button>
+          <!-- Glitch Persona -->
+          <button id="btn-persona-glitch" onclick="applyPersonaPreset('glitch')" 
+            class="neon-btn p-2.5 rounded text-xs bg-slate-900 text-rose-300 border-rose-500/70 hover:bg-rose-950">
+            HỖN LOẠN
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== COL 3: CONSOLE STREAM & ARCADIA CHAT (36% = 4 COLS) ==================== -->
+    <section class="col-span-4 hud-panel flex flex-col p-3.5 justify-between min-h-0 border-purple-500/30">
+      
+      <!-- Terminal Header -->
+      <div class="flex items-center justify-between border-b border-purple-500/30 pb-2 mb-2 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-bold text-xs text-purple-300 font-mono">CONSOLE_STREAM // I/O</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="clearChat()" class="text-[10px] px-2.5 py-1 rounded bg-slate-800 text-slate-300 hover:bg-slate-700 font-mono">
+            [XÓA CHAT]
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Log Stream (Auto Scrollable, Fits 100% Height) -->
+      <div id="chat-stream" class="flex-1 overflow-y-auto cyber-scroll p-3 space-y-3 bg-[#070611] rounded-lg border border-purple-500/20 text-xs font-mono">
+        <!-- Default Welcome Message -->
+        <div class="flex gap-2.5 items-start">
+          <div class="px-1.5 py-0.5 rounded bg-purple-600 text-white font-bold text-[9px] flex-shrink-0 mt-1 shadow">
+            BITTO
+          </div>
+          <div class="bg-purple-950/50 border border-purple-500/40 rounded-lg p-2.5 text-purple-200 leading-relaxed max-w-[88%]">
+            <div class="text-[10px] font-bold text-purple-400 mb-1 flex items-center justify-between">
+              <span>BITTO_AGENT</span>
+              <span class="text-slate-500">SYSTEM_READY</span>
+            </div>
+            Gâu gâu! Xin chào bạn! Mình là Bitto — thú cưng AI của bạn. Hãy nhập câu hỏi bên dưới để cùng trò chuyện nhé!
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Bar -->
+      <div class="flex gap-2 items-center flex-shrink-0 pt-2">
+        <input id="user-input" type="text" placeholder="Nhập câu hỏi hoặc lệnh cho Bitto..." 
+          onkeydown="if(event.key==='Enter') handleUserSend()"
+          class="flex-1 bg-[#05040b] border-2 border-purple-500/50 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-purple-400 focus:shadow-[0_0_10px_rgba(168,85,247,0.3)] transition-all font-mono">
+        <button id="btn-send-msg" onclick="handleUserSend()" 
+          class="neon-btn px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-purple-300 hover:from-purple-500 hover:to-indigo-500 shadow-[0_0_12px_rgba(168,85,247,0.5)] text-xs font-bold">
+          GỬI
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER TELEMETRY ==================== -->
+  <footer class="h-8 w-full hud-panel px-4 flex items-center justify-between border-purple-500/30 mt-3 text-[11px] text-slate-400 font-mono flex-shrink-0">
+    <div class="flex items-center gap-5">
+      <span>ĐỘ TRỄ: <strong id="metric-latency" class="text-amber-300">0.00s</strong></span>
+      <span>CHI PHÍ: <strong id="metric-cost" class="text-emerald-300">$0.00000</strong></span>
+      <span>TOKEN: <strong id="metric-tokens" class="text-purple-300">0</strong></span>
+      <span>BỘ NHỚ: <strong id="metric-memory-count" class="text-indigo-300">0/3 LƯỢT</strong></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span>TRẠNG THÁI:</span>
+      <span id="metric-status" class="text-emerald-400 font-bold flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ONLINE (GEMINI-FLASH-LITE)
+      </span>
+    </div>
+  </footer>
+
+  <!-- ==================== LOGIC & INTEGRATIONS ==================== -->
+  <script>
+    // System State
+    let temperature = 0.7;
+    let topP = 0.9;
+    let memoryTurns = 3;
+    let currentPersona = 'pet';
+    let chatHistory = [];
+    let isProcessing = false;
+    let isRealApiMode = true;
+
+    // Pet Vitals State
+    let petEnergy = 100;
+    let petHappiness = 90;
+    let petLevel = 1;
+
+    // Gemini API Configurations (Bảo mật: Đọc từ localStorage hoặc cấu hình trực tiếp qua nút KEY)
+    let GEMINI_API_KEY = localStorage.getItem('GEMINI_API_KEY') || "";
+    const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+
+    function configureApiKey() {
+      const current = localStorage.getItem('GEMINI_API_KEY') || "";
+      const input = prompt("Nhập Google Gemini API Key của bạn (Key được lưu an toàn trong localStorage của trình duyệt):", current);
+      if (input !== null) {
+        GEMINI_API_KEY = input.trim();
+        localStorage.setItem('GEMINI_API_KEY', GEMINI_API_KEY);
+        alert(GEMINI_API_KEY ? "Đã lưu API Key thành công!" : "Đã xóa API Key khỏi trình duyệt.");
+      }
+    }
+
+    const PERSONA_PROMPTS = {
+      pet: "Bạn là Bitto, một chú cún thú cưng AI thông minh, trung thành và siêu đáng yêu trong thế giới pixel 8-bit. Hãy LUÔN TRẢ LỜI ĐẦY ĐỦ, CHÍNH XÁC VÀ HẤP DẪN câu hỏi của người dùng, xưng là Bitto, dùng tiếng Việt vui vẻ, thân thiện, đôi khi gâu gâu nhẹ.",
+      robot: "Bạn là robot phân tích dữ liệu siêu logic. Hãy luôn trả lời đầy đủ, chính xác, ngắn gọn và khoa học câu hỏi của người dùng, sử dụng thuật ngữ kỹ thuật, hoàn toàn không cảm xúc.",
+      sage: "Bạn là một hiền triết phương Đông thông thái. Hãy luôn trả lời trọn vẹn câu hỏi của người dùng, giải thích sâu sắc bằng ẩn dụ và triết lý thâm thúy nhưng dễ hiểu.",
+      glitch: "Bạn là sinh vật số pixel tinh nghịch. Hãy luôn trả lời đúng và đầy đủ câu hỏi, đồng thời pha trộn sự sáng tạo hài hước, phong cách 8-bit sống động."
+    };
+
+    // PERSONA PRESET CONFIGURATIONS (Tự động thay đổi toàn bộ thanh trượt khi chọn)
+    const PERSONA_PRESETS = {
+      pet: {
+        temp: 0.70,
+        topP: 0.90,
+        memory: 3,
+        name: "CÚN CƯNG",
+        bodyColor: "#9333ea",
+        auraColor: "rgba(147, 51, 234, 0.25)",
+        activeClass: "neon-btn p-2.5 rounded text-xs bg-purple-600 text-white border-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.5)]"
+      },
+      robot: {
+        temp: 0.10,
+        topP: 0.30,
+        memory: 2,
+        name: "SIÊU LOGIC",
+        bodyColor: "#475569",
+        auraColor: "rgba(6, 182, 212, 0.25)",
+        activeClass: "neon-btn p-2.5 rounded text-xs bg-cyan-600 text-white border-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
+      },
+      sage: {
+        temp: 0.60,
+        topP: 0.85,
+        memory: 6,
+        name: "HIỀN TRIẾT",
+        bodyColor: "#d97706",
+        auraColor: "rgba(245, 158, 11, 0.25)",
+        activeClass: "neon-btn p-2.5 rounded text-xs bg-amber-600 text-white border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.5)]"
+      },
+      glitch: {
+        temp: 1.65,
+        topP: 1.00,
+        memory: 1,
+        name: "HỖN LOẠN",
+        bodyColor: "#e11d48",
+        auraColor: "rgba(244, 63, 94, 0.3)",
+        activeClass: "neon-btn p-2.5 rounded text-xs bg-rose-600 text-white border-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.5)]"
+      }
+    };
+
+    // DOM Elements
+    const sliderTemp = document.getElementById('slider-temp');
+    const valTemp = document.getElementById('val-temp');
+    const descTemp = document.getElementById('desc-temp');
+    const hudTempTag = document.getElementById('hud-temp-tag');
+
+    const sliderTopp = document.getElementById('slider-topp');
+    const valTopp = document.getElementById('val-topp');
+    const descTopp = document.getElementById('desc-topp');
+
+    const sliderMemory = document.getElementById('slider-memory');
+    const valMemory = document.getElementById('val-memory');
+    const descMemory = document.getElementById('desc-memory');
+
+    const chatStream = document.getElementById('chat-stream');
+    const userInput = document.getElementById('user-input');
+    const btnSendMsg = document.getElementById('btn-send-msg');
+    const btnEngineToggle = document.getElementById('btn-engine-toggle');
+    const labelEngineBtn = document.getElementById('label-engine-btn');
+
+    const petThoughtText = document.getElementById('pet-thought-text');
+    const petMoodBadge = document.getElementById('pet-mood-badge');
+    const petAura = document.getElementById('pet-aura');
+    const spriteWrapper = document.getElementById('sprite-wrapper');
+    const pupBody = document.getElementById('pup-body');
+    const pupEyes = document.getElementById('pup-eyes');
+    const pupMouth = document.getElementById('pup-mouth');
+    const pupBlush = document.getElementById('pup-blush');
+    const accAntenna = document.getElementById('acc-antenna');
+
+    const txtEnergy = document.getElementById('txt-energy');
+    const barEnergy = document.getElementById('bar-energy');
+    const txtHappiness = document.getElementById('txt-happiness');
+    const barHappiness = document.getElementById('bar-happiness');
+    const txtHallucination = document.getElementById('txt-hallucination');
+    const barHallucination = document.getElementById('bar-hallucination');
+
+    const metricLatency = document.getElementById('metric-latency');
+    const metricCost = document.getElementById('metric-cost');
+    const metricTokens = document.getElementById('metric-tokens');
+    const metricMemoryCount = document.getElementById('metric-memory-count');
+    const metricStatus = document.getElementById('metric-status');
+
+    // Live Clock
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock-display').innerText = now.toTimeString().split(' ')[0];
+    }, 1000);
+
+    // ==================== ENGINE MODE SWITCH ====================
+    function toggleEngineMode() {
+      isRealApiMode = !isRealApiMode;
+      if (isRealApiMode) {
+        labelEngineBtn.innerText = "[MODE: REAL GEMINI API]";
+        btnEngineToggle.className = "neon-btn text-xs px-3 py-1.5 rounded bg-emerald-950/90 text-emerald-300 border-emerald-400 hover:bg-emerald-900 shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+        metricStatus.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ONLINE (GEMINI-FLASH-LITE)`;
+        appendSystemLog("Hệ thống kết nối trực tiếp Google Gemini Cloud API.");
+      } else {
+        labelEngineBtn.innerText = "[MODE: SMART SIMULATOR]";
+        btnEngineToggle.className = "neon-btn text-xs px-3 py-1.5 rounded bg-blue-950/90 text-blue-300 border-blue-400 hover:bg-blue-900 shadow-[0_0_10px_rgba(56,189,248,0.3)]";
+        metricStatus.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> OFFLINE (SIMULATOR ENGINE)`;
+        appendSystemLog("Đã chuyển sang Bộ giả lập thông minh nội bộ.");
+      }
+    }
+
+    // ==================== PERSONA PRESETS APPLICATION ====================
+    function applyPersonaPreset(p) {
+      currentPersona = p;
+      const preset = PERSONA_PRESETS[p];
+
+      // 1. Tự động đồng bộ các thanh tham số
+      temperature = preset.temp;
+      topP = preset.topP;
+      memoryTurns = preset.memory;
+
+      // Cập nhật giá trị các thanh trượt và nhãn hiển thị
+      sliderTemp.value = temperature;
+      valTemp.innerText = temperature.toFixed(2);
+      hudTempTag.innerText = `T = ${temperature.toFixed(2)}`;
+
+      sliderTopp.value = topP;
+      valTopp.innerText = topP.toFixed(2);
+      descTopp.innerText = `Lấy ${Math.round(topP * 100)}% từ ngữ xác suất cao`;
+
+      sliderMemory.value = memoryTurns;
+      valMemory.innerText = `${memoryTurns} LƯỢT`;
+      descMemory.innerText = `Cắt ngắn theo history[-${memoryTurns * 2}:]`;
+
+      // 2. Cập nhật nút tính cách đang chọn
+      ['pet', 'robot', 'sage', 'glitch'].forEach(k => {
+        const btn = document.getElementById(`btn-persona-${k}`);
+        if (k === p) {
+          btn.className = PERSONA_PRESETS[k].activeClass;
+        } else {
+          btn.className = "neon-btn p-2.5 rounded text-xs bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800";
+        }
+      });
+
+      // 3. Cập nhật diện mạo thú cưng và thước đo ngữ cảnh
+      updatePetVisualState();
+      updateMemoryMetric();
+      spawnFloatingText(`SET: ${preset.name}`);
+    }
+
+    // ==================== MANUAL SLIDER LISTENERS ====================
+    sliderTemp.addEventListener('input', (e) => {
+      temperature = parseFloat(e.target.value);
+      valTemp.innerText = temperature.toFixed(2);
+      hudTempTag.innerText = `T = ${temperature.toFixed(2)}`;
+      updatePetVisualState();
+    });
+
+    sliderTopp.addEventListener('input', (e) => {
+      topP = parseFloat(e.target.value);
+      valTopp.innerText = topP.toFixed(2);
+      descTopp.innerText = `Lấy ${Math.round(topP * 100)}% từ ngữ xác suất cao`;
+    });
+
+    sliderMemory.addEventListener('input', (e) => {
+      memoryTurns = parseInt(e.target.value);
+      valMemory.innerText = `${memoryTurns} LƯỢT`;
+      descMemory.innerText = `Cắt ngắn theo history[-${memoryTurns * 2}:]`;
+      updateMemoryMetric();
+    });
+
+    // ==================== VISUAL PET MORPHING ====================
+    function updatePetVisualState() {
+      spriteWrapper.classList.remove('anim-idle', 'anim-hyper', 'anim-glitch');
+      accAntenna.classList.add('hidden');
+
+      const preset = PERSONA_PRESETS[currentPersona];
+      pupBody.setAttribute('fill', preset.bodyColor);
+      petAura.style.backgroundColor = preset.auraColor;
+
+      // 1. T <= 0.25: COLD LOGIC
+      if (temperature <= 0.25) {
+        descTemp.innerText = "Tất định // Logic cao";
+        petMoodBadge.innerText = "BĂNG GIÁ (LOGIC)";
+        petMoodBadge.className = "font-bold text-cyan-400";
+        petThoughtText.innerText = `> LOGIC TẬP TRUNG (T=${temperature.toFixed(2)}): Xác suất chặt chẽ. Trả lời chính xác 100%, không ảo giác.`;
+        
+        // Robot Visor Eyes
+        pupEyes.innerHTML = `<rect x="10" y="13" width="12" height="3" fill="#06b6d4"/><rect x="15" y="13" width="2" height="3" fill="#ffffff"/>`;
+        pupMouth.innerHTML = `<rect x="14" y="18" width="4" height="1" fill="#0f172a"/>`;
+        pupBlush.style.display = "none";
+        accAntenna.classList.remove('hidden');
+
+        spriteWrapper.classList.add('anim-idle');
+        txtHallucination.innerText = "0% (NONE)";
+        txtHallucination.className = "mono-num text-cyan-400 font-bold";
+        barHallucination.style.width = "2%";
+        barHallucination.className = "h-full bg-cyan-400 transition-all duration-300";
+      }
+      // 2. 0.25 < T <= 0.95: BALANCED & NATURAL
+      else if (temperature <= 0.95) {
+        descTemp.innerText = "Cân bằng & Tự nhiên";
+        petMoodBadge.innerText = "VUI VẺ (OPTIMAL)";
+        petMoodBadge.className = "font-bold text-emerald-400";
+        petThoughtText.innerText = `> CÂN BẰNG TỰ NHIÊN (T=${temperature.toFixed(2)}): Thú cưng vui vẻ, phản hồi ấm áp, sinh động và chính xác.`;
+        
+        pupEyes.innerHTML = `
+          <rect x="11" y="13" width="3" height="3" fill="#0f172a"/>
+          <rect x="12" y="13" width="1" height="1" fill="#ffffff"/>
+          <rect x="18" y="13" width="3" height="3" fill="#0f172a"/>
+          <rect x="19" y="13" width="1" height="1" fill="#ffffff"/>
+        `;
+        pupMouth.innerHTML = `<rect x="15" y="18" width="2" height="1" fill="#be123c"/><rect x="14" y="17" width="1" height="1" fill="#be123c"/><rect x="17" y="17" width="1" height="1" fill="#be123c"/>`;
+        pupBlush.style.display = "block";
+
+        spriteWrapper.classList.add('anim-idle');
+        const halRisk = Math.round(temperature * 12);
+        txtHallucination.innerText = `THẤP (${halRisk}%)`;
+        txtHallucination.className = "mono-num text-emerald-400 font-bold";
+        barHallucination.style.width = `${halRisk}%`;
+        barHallucination.className = "h-full bg-emerald-400 transition-all duration-300";
+      }
+      // 3. 0.95 < T <= 1.55: CREATIVE
+      else if (temperature <= 1.55) {
+        descTemp.innerText = "Sáng tạo & Bay bổng";
+        petMoodBadge.innerText = "TĂNG ĐỘNG (EXCITED)";
+        petMoodBadge.className = "font-bold text-amber-400";
+        petThoughtText.innerText = `> SÁNG TẠO BÙNG NỔ (T=${temperature.toFixed(2)}): Từ ngữ phong phú, văn phong bay bổng, linh hoạt đầy ngẫu hứng!`;
+        
+        pupEyes.innerHTML = `
+          <rect x="11" y="12" width="3" height="4" fill="#0f172a"/>
+          <rect x="12" y="12" width="1" height="2" fill="#facc15"/>
+          <rect x="18" y="12" width="3" height="4" fill="#0f172a"/>
+          <rect x="19" y="12" width="1" height="2" fill="#facc15"/>
+        `;
+        pupMouth.innerHTML = `<rect x="14" y="18" width="4" height="2" fill="#be123c"/>`;
+        pupBlush.style.display = "block";
+
+        spriteWrapper.classList.add('anim-hyper');
+        const halRisk = Math.round(temperature * 32);
+        txtHallucination.innerText = `TRUNG BÌNH (${halRisk}%)`;
+        txtHallucination.className = "mono-num text-amber-400 font-bold";
+        barHallucination.style.width = `${halRisk}%`;
+        barHallucination.className = "h-full bg-amber-400 transition-all duration-300";
+      }
+      // 4. T > 1.55: OVERHEATING / HALLUCINATION ALERT
+      else {
+        descTemp.innerText = "Ảo giác cực đại // Cảnh báo";
+        petMoodBadge.innerText = "ẢO GIÁC! (OVERHEAT)";
+        petMoodBadge.className = "font-bold text-rose-400 animate-pulse";
+        petThoughtText.innerText = `> CẢNH BÁO NHIỆT ĐỘ CAO (T=${temperature.toFixed(2)}): Nguy cơ ảo giác cực đại, model có xu hướng bịa thông tin!`;
+        
+        // Spiral / Glitch Eyes
+        pupEyes.innerHTML = `
+          <rect x="11" y="13" width="1" height="3" fill="#ef4444"/><rect x="13" y="13" width="1" height="3" fill="#ef4444"/><rect x="12" y="14" width="1" height="1" fill="#ffffff"/>
+          <rect x="18" y="13" width="1" height="3" fill="#ef4444"/><rect x="20" y="13" width="1" height="3" fill="#ef4444"/><rect x="19" y="14" width="1" height="1" fill="#ffffff"/>
+        `;
+        pupMouth.innerHTML = `<rect x="13" y="18" width="6" height="2" fill="#991b1b"/>`;
+        pupBlush.style.display = "none";
+
+        spriteWrapper.classList.add('anim-glitch');
+        const halRisk = Math.min(98, Math.round(temperature * 50));
+        txtHallucination.innerText = `CỰC CAO (${halRisk}%)`;
+        txtHallucination.className = "mono-num text-rose-400 font-bold animate-pulse";
+        barHallucination.style.width = `${halRisk}%`;
+        barHallucination.className = "h-full bg-rose-500 transition-all duration-300";
+      }
+    }
+
+    // ==================== TAMAGOTCHI PET ACTIONS ====================
+    function petAction(action) {
+      if (action === 'feed') {
+        petEnergy = Math.min(100, petEnergy + 25);
+        updateVitalsUI();
+        spawnFloatingText("+25 NĂNG LƯỢNG");
+        botQuickReply("Gâu gâu! Cảm ơn bạn nha! Dữ liệu thơm ngon quá, mình thấy tràn đầy năng lượng rồi nè!");
+      } 
+      else if (action === 'love') {
+        petHappiness = Math.min(100, petHappiness + 20);
+        updateVitalsUI();
+        spawnFloatingText("+20 HẠNH PHÚC");
+        botQuickReply("Ư... gâu gâu thích quá! Bitto yêu bạn nhất trần đời luôn!");
+      } 
+      else if (action === 'train') {
+        petLevel++;
+        petHappiness = Math.min(100, petHappiness + 10);
+        petEnergy = Math.max(10, petEnergy - 15);
+        updateVitalsUI();
+        spawnFloatingText(`LV UP: ${petLevel}`);
+        botQuickReply(`Gâu! Bitto vừa được huấn luyện nâng cao (Cấp độ: Lv.${petLevel})! Bạn hãy thử hỏi mình câu nào khó xem sao nhé!`);
+      } 
+      else if (action === 'sleep') {
+        petEnergy = 100;
+        petHappiness = Math.max(50, petHappiness);
+        chatHistory = [];
+        updateVitalsUI();
+        updateMemoryMetric();
+        spawnFloatingText("Zzz... RESET");
+        botQuickReply("Khò khò... Bitto đã tỉnh táo và xóa sạch bộ nhớ tạm thời rồi nhé!");
+      }
+    }
+
+    function spawnFloatingText(txt) {
+      const container = document.getElementById('particle-container');
+      const el = document.createElement('div');
+      el.className = 'absolute text-xs font-bold font-mono tracking-wider text-purple-300 bg-slate-900/90 border border-purple-400 px-2 py-0.5 rounded floating-particle pointer-events-none shadow';
+      el.innerText = txt;
+      el.style.left = `${30 + Math.random() * 25}%`;
+      el.style.top = `${40 + Math.random() * 20}%`;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+
+    function updateVitalsUI() {
+      txtEnergy.innerText = `${petEnergy}%`;
+      barEnergy.style.width = `${petEnergy}%`;
+      txtHappiness.innerText = `${petHappiness}%`;
+      barHappiness.style.width = `${petHappiness}%`;
+    }
+
+    function updateMemoryMetric() {
+      const storedTurns = Math.floor(chatHistory.length / 2);
+      metricMemoryCount.innerText = `${Math.min(storedTurns, memoryTurns)}/${memoryTurns} LƯỢT`;
+    }
+
+    // ==================== CHAT STREAM & LLM INTERACTION ====================
+    function sendQuickPrompt(text) {
+      userInput.value = text;
+      handleUserSend();
+    }
+
+    async function handleUserSend() {
+      const prompt = userInput.value.trim();
+      if (!prompt || isProcessing) return;
+      
+      userInput.value = '';
+      isProcessing = true;
+      btnSendMsg.disabled = true;
+
+      petEnergy = Math.max(5, petEnergy - 4);
+      updateVitalsUI();
+
+      appendUserBubble(prompt);
+
+      chatHistory.push({ role: 'user', content: prompt });
+      const maxMsgs = memoryTurns * 2;
+      if (chatHistory.length > maxMsgs) {
+        chatHistory = chatHistory.slice(-maxMsgs);
+      }
+      updateMemoryMetric();
+
+      const startTime = performance.now();
+
+      if (isRealApiMode) {
+        try {
+          appendSystemLog("Đang truy vấn Google Gemini Cloud API...");
+          const reply = await fetchGeminiWithBackoff(prompt);
+          const latency = ((performance.now() - startTime) / 1000).toFixed(2);
+          renderAssistantTypewriter(reply, latency);
+        } catch (err) {
+          console.warn("API Error, fallback to simulator:", err);
+          appendSystemLog(`[LỖI API]: ${err.message}. Chuyển tiếp qua Bộ giả lập...`);
+          const fallback = computeSmartSimulatorReply(prompt);
+          const latency = ((performance.now() - startTime) / 1000).toFixed(2);
+          renderAssistantTypewriter(fallback, latency);
+        }
+      } else {
+        const fallback = computeSmartSimulatorReply(prompt);
+        const latency = (0.2 + Math.random() * 0.25).toFixed(2);
+        renderAssistantTypewriter(fallback, latency);
+      }
+    }
+
+    // Live Gemini Cloud API with Exponential Backoff
+    async function fetchGeminiWithBackoff(userText) {
+      if (!GEMINI_API_KEY) {
+        const inputKey = prompt("Vui lòng nhập Google Gemini API Key của bạn (Key được lưu an toàn trong localStorage của trình duyệt):");
+        if (inputKey && inputKey.trim()) {
+          GEMINI_API_KEY = inputKey.trim();
+          localStorage.setItem('GEMINI_API_KEY', GEMINI_API_KEY);
+        } else {
+          throw new Error("Chưa cấu hình API Key. Hãy bấm nút [KEY] để nhập hoặc chuyển sang [MODE: SMART SIMULATOR].");
+        }
+      }
+
+      const CANDIDATE_MODELS = ['gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-3.6-flash'];
+      const messages = [
+        { role: 'system', content: PERSONA_PROMPTS[currentPersona] },
+        ...chatHistory
+      ];
+
+      let lastErr = null;
+      for (const model of CANDIDATE_MODELS) {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const resp = await fetch(GEMINI_ENDPOINT, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GEMINI_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: model,
+                messages: messages,
+                temperature: temperature,
+                top_p: topP,
+                max_tokens: 512
+              })
+            });
+
+            if (resp.status === 429 || resp.status === 503) {
+              const backoffMs = 300 * Math.pow(2, attempt);
+              appendSystemLog(`[BACKOFF]: Model ${model} bận (${resp.status}). Đợi ${backoffMs}ms...`);
+              await new Promise(r => setTimeout(r, backoffMs));
+              continue;
+            }
+
+            if (!resp.ok) {
+              const errBody = await resp.text();
+              throw new Error(`HTTP ${resp.status}: ${errBody.slice(0, 70)}`);
+            }
+
+            const data = await resp.json();
+            if (data.choices && data.choices[0]?.message) {
+              metricStatus.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ONLINE (${model.toUpperCase()})`;
+              return data.choices[0].message.content.trim();
+            }
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+      }
+      throw lastErr || new Error('Tất cả mô hình đều đang bận.');
+    }
+
+    // Local Smart Knowledge Engine (Offline Simulator)
+    function computeSmartSimulatorReply(prompt) {
+      const lower = prompt.toLowerCase();
+
+      // Identity query
+      if (lower.includes('sinh vật') || lower.includes('là ai') || lower.includes('con gì') || lower.includes('tên gì') || lower.includes('thứ gì')) {
+        if (currentPersona === 'robot') return "[ENTITY_ID]: Tôi là Bitto — thực thể trí tuệ nhân tạo dạng thú cưng 8-bit chạy trên kiến trúc LLM Agent.";
+        if (currentPersona === 'sage') return "Ta là Bitto — một linh hồn số trong vũ trụ pixel, dệt nên từ các vector tri thức của mô hình ngôn ngữ.";
+        if (currentPersona === 'glitch') return "Tôi là quái vật pixel sinh ra từ một cú tràn bộ nhớ trong bài Lab 1 của bạn hehehe!";
+        return "Gâu gâu! Tôi là Bitto — một chú cún thú cưng ảo (Virtual Pet) trong thế giới pixel 8-bit! Tôi được nuôi dưỡng bằng các token và vận hành bởi mô hình ngôn ngữ lớn (LLM) đó nha!";
+      }
+
+      // Memory query
+      if (lower.includes('hồi nãy') || lower.includes('vừa hỏi') || lower.includes('nhớ gì') || lower.includes('trước đó')) {
+        if (chatHistory.length <= 2 || memoryTurns <= 1) {
+          return temperature >= 1.5 
+            ? "Não bộ tôi đang bốc hỏa trong cơn sốt nhiệt độ! Tôi chỉ nhớ một đàn chim cánh cụt đang nhảy disco!" 
+            : `Tôi không nhớ được vì bộ nhớ ngữ cảnh hiện chỉ lưu trữ tối đa ${memoryTurns} lượt gần nhất.`;
+        }
+        const prevMsg = chatHistory[chatHistory.length - 3]?.content || "lời chào";
+        return `[BỘ NHỚ LƯU TRỮ]: Hồi nãy bạn vừa hỏi: "${prevMsg}". Trí nhớ ${memoryTurns} lượt của tôi vẫn đang ghi nhận rất tốt!`;
+      }
+
+      // Vietnam Trivia
+      if (lower.includes('việt nam') || lower.includes('viet nam') || lower.includes('sự thật')) {
+        if (temperature <= 0.25) return "[FACT]: Việt Nam sở hữu hang Sơn Đoòng tại Quảng Bình - hang động tự nhiên lớn nhất thế giới, chiều dài hơn 9km với hệ sinh thái và rừng nguyên sinh độc lập bên trong.";
+        if (temperature <= 0.95) return "Gâu gâu! Để Bitto kể bạn nghe một sự thật siêu tự hào: Hang Sơn Đoòng ở Quảng Bình chính là hang động tự nhiên lớn nhất thế giới! Bên trong hang có cả mây mù, thời tiết riêng và một khu rừng nguyên sinh ngút ngàn luôn đó!";
+        if (temperature <= 1.55) return "Bạn biết không? Món cà phê trứng béo ngậy của Hà Nội ra đời từ sự tình cờ thú vị khi thiếu sữa tươi vào thập niên 1940, biến sự khan hiếm thành di sản ẩm thực vang danh năm châu!";
+        return "Oa oa! Ở Việt Nam có những hạt cà phê bay bổng biết hát bài đồng dao trên đỉnh Fansipan cùng những đám mây ngũ sắc rực rỡ lấp lánh 🚀🌟!";
+      }
+
+      // Math
+      if (lower.includes('1 + 1') || lower.includes('1+1')) {
+        if (temperature <= 0.25) return "[MATH_SOLVER]: 1 + 1 = 2 (Độ tin cậy: 100.00%, Không có độ lệch tính toán).";
+        if (temperature <= 0.95) return "1 + 1 = 2 bạn nhé! Câu hỏi cơ bản nhưng chuẩn không cần chỉnh!";
+        if (temperature <= 1.55) return "1 + 1 bằng 2, nhưng trong hợp tác sáng tạo đôi khi 1 + 1 lại tạo ra giá trị bằng 11 đó nha!";
+        return "1 + 1 bằng... một chùm bóng bay hình trái tim cầu vồng biết bayyyyy!!";
+      }
+
+      // Greetings
+      if (lower.includes('chào') || lower.includes('hello') || lower.includes('hi')) {
+        if (currentPersona === 'robot') return `[SYSTEM]: Xin chào người dùng. Hệ thống đang vận hành ổn định với T=${temperature.toFixed(2)}.`;
+        if (currentPersona === 'sage') return "Chào người bạn hữu duyên. Mỗi câu hỏi trong cuộc đời đều là một hạt mầm của sự giác ngộ.";
+        if (currentPersona === 'glitch') return "Hế lô hế lô! Ma trận pixel Bitto đã sẵn sàng quậy tưng bừng cùng bạn!";
+        return "Gâu gâu! Bitto xin chào bạn nè! Hôm nay bạn muốn cùng mình học tập hay khám phá điều gì mới mẻ?";
+      }
+
+      // General fallback
+      if (currentPersona === 'robot') return `[LOGIC_RESPONSE]: Đã xử lý yêu cầu "${prompt}". Kết quả được tối ưu hóa theo mô hình toán học.`;
+      if (currentPersona === 'sage') return `Về câu hỏi "${prompt}", vạn vật tuần hoàn đều tuân theo trật tự tự nhiên. Hãy kiên nhẫn cảm nhận câu trả lời.`;
+      if (currentPersona === 'glitch') return `Woa! Ý tưởng "${prompt}" làm mấy con chip trong đầu Bitto xoay vòng vòng vui quá trời!`;
+      return `Gâu! Mình đã hiểu câu hỏi của bạn về "${prompt}". Rất vui được đồng hành cùng bạn trong bài lab này!`;
+    }
+
+    // ==================== RENDERING UTILS ====================
+    function appendUserBubble(text) {
+      const bubble = document.createElement('div');
+      bubble.className = "flex gap-2.5 items-start justify-end";
+      bubble.innerHTML = `
+        <div class="bg-blue-950/60 border border-blue-500/40 rounded-lg p-2.5 text-blue-100 leading-relaxed max-w-[85%] text-right shadow">
+          <div class="text-[10px] font-bold text-blue-400 mb-1">BẠN</div>
+          ${escapeHtml(text)}
+        </div>
+        <div class="px-1.5 py-0.5 rounded bg-blue-600 text-white font-bold text-[9px] flex-shrink-0 mt-1 shadow">
+          YOU
+        </div>
+      `;
+      chatStream.appendChild(bubble);
+      chatStream.scrollTop = chatStream.scrollHeight;
+    }
+
+    function renderAssistantTypewriter(fullText, latency) {
+      const bubble = document.createElement('div');
+      bubble.className = "flex gap-2.5 items-start";
+      bubble.innerHTML = `
+        <div class="px-1.5 py-0.5 rounded bg-purple-600 text-white font-bold text-[9px] flex-shrink-0 mt-1 shadow">
+          ${currentPersona.toUpperCase()}
+        </div>
+        <div class="bg-purple-950/50 border border-purple-500/40 rounded-lg p-2.5 text-purple-200 leading-relaxed max-w-[85%] shadow">
+          <div class="text-[10px] font-bold text-purple-400 mb-1 flex items-center justify-between">
+            <span>BITTO_${currentPersona.toUpperCase()}</span>
+            <span class="text-slate-500">${latency}s</span>
+          </div>
+          <span class="content-text"></span>
+        </div>
+      `;
+      chatStream.appendChild(bubble);
+      const spanContent = bubble.querySelector('.content-text');
+
+      let i = 0;
+      const speed = Math.max(8, 24 - Math.round(temperature * 8));
+      const interval = setInterval(() => {
+        if (i < fullText.length) {
+          spanContent.textContent += fullText[i];
+          i++;
+          chatStream.scrollTop = chatStream.scrollHeight;
+        } else {
+          clearInterval(interval);
+          isProcessing = false;
+          btnSendMsg.disabled = false;
+          chatHistory.push({ role: 'assistant', content: fullText });
+          updateTelemetry(fullText, latency);
+        }
+      }, speed);
+    }
+
+    function botQuickReply(text) {
+      renderAssistantTypewriter(text, "0.15");
+    }
+
+    function appendSystemLog(msg) {
+      console.log("[BITTO_SYSTEM]", msg);
+    }
+
+    function updateTelemetry(replyText, lat) {
+      const tokens = Math.round(replyText.length / 2.7) + 16;
+      const cost = ((tokens / 1000) * 0.0006).toFixed(5);
+      metricTokens.innerText = tokens;
+      metricLatency.innerText = `${lat}s`;
+      metricCost.innerText = `$${cost}`;
+    }
+
+    function clearChat() {
+      chatStream.innerHTML = '';
+      chatHistory = [];
+      updateMemoryMetric();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Initial Render: Start with Pet Preset
+    applyPersonaPreset('pet');
+    updateVitalsUI();
+  </script>
+</body>
+</html>
